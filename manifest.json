@@ -1,0 +1,44 @@
+{
+  "name": "Personal Blocklist(not by Google)",
+  "version": "0.1.5",
+  "description": "検索結果から不要なサイトを削除します。",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["common.js"]
+  },
+  "browser_action": {
+    "default_title": "Personal Blocklist(not by Google)",
+    "default_popup": "manager.html"
+  },
+  "icons": {
+    "16": "images/icon.png",
+    "48": "images/icon.png",
+    "128": "images/icon.png"
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches":[
+        "http://www.google.com/",
+        "http://www.google.com/search*",
+        "http://www.google.com/webhp*",
+        "https://www.google.com/",
+        "https://www.google.com/?*",
+        "https://www.google.com/search*",
+        "https://www.google.com/webhp*",
+
+        "http://www.google.co.jp/",
+        "http://www.google.co.jp/search*",
+        "http://www.google.co.jp/webhp*",
+        "https://www.google.co.jp/",
+        "https://www.google.co.jp/?*",
+        "https://www.google.co.jp/search*",
+        "https://www.google.co.jp/webhp*"
+      ],
+      "js": ["common.js","content_script.js"]
+    }
+  ]
+}
