@@ -5,7 +5,7 @@ blocklist.manager = {};
 blocklist.manager.handleDeleteBlocklistResponse = function(response) {
   chrome.tabs.query({
     active: true,
-    lastFocusedWindow: true
+    currentWindow: true
   }, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'refresh'
@@ -16,7 +16,7 @@ blocklist.manager.handleDeleteBlocklistResponse = function(response) {
 blocklist.manager.handleAddBlocklistResponse = function(response) {
   chrome.tabs.query({
     active: true,
-    lastFocusedWindow: true
+    currentWindow: true
   }, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'refresh'
@@ -25,24 +25,35 @@ blocklist.manager.handleAddBlocklistResponse = function(response) {
 };
 
 blocklist.manager.createBlocklistPattern = function(pattern) {
-  var patRow = $(
+  let patRow = $(
     '<div style="display:flex;font-size:16px;margin:10px 0;padding:5px 0;border-bottom:1px solid #f2f2f2;"></div>');
-  var patRowDeleteButton = $(
-    '<div style="margin-right: 15px;"><span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">ブロックを解除</span></div>');
+  let patRowDeleteButton = $('<div class="isBlocked" style="margin-right: 15px;"></div>');
+  let span = $('<span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">' +
+              chrome.i18n.getMessage('removeUrlFromBlocklist') +
+              '</span>');
+
+  patRowDeleteButton.append(span);
   patRowDeleteButton.appendTo(patRow);
-  var patRowHostName = $(
+
+  let patRowHostName = $(
     '<div>' + pattern + '<div>');
   patRowHostName.appendTo(patRow);
 
-  patRowDeleteButton.click(function() {
-    if ($(this).text() == "ブロックを解除") {
+  patRowDeleteButton.on("click", function() {
+    let btn = $(this);
+
+    if (btn.hasClass("isBlocked")) {
       chrome.runtime.sendMessage({
           type: blocklist.common.DELETE_FROM_BLOCKLIST,
           pattern: pattern
         },
         blocklist.manager.handleDeleteBlocklistResponse);
-      $(this).html(
-        '<span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">ブロックをする</span>');
+
+      btn.removeClass("isBlocked");
+      span.html(
+        '<span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">' +
+        chrome.i18n.getMessage('blockThisUrl') +
+        '</span>');
 
     } else {
       chrome.runtime.sendMessage({
@@ -50,8 +61,13 @@ blocklist.manager.createBlocklistPattern = function(pattern) {
           pattern: pattern
         },
         blocklist.manager.handleAddBlocklistResponse);
-      $(this).html(
-        '<span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">ブロックを解除</span>');
+
+      btn.addClass("isBlocked");
+      span.html(
+        '<span style="color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;">' +
+        chrome.i18n.getMessage('removeUrlFromBlocklist') +
+        '</span>');
+
     }
   });
   return patRow;
@@ -64,34 +80,38 @@ blocklist.manager.handleAddBlocklistResponse = function(response) {
     blocklist.manager.handleRefreshResponse);
 }
 
-blocklist.manager.hideCurrentHost = function() {
-  let pattern = $("#current-host").text();
+blocklist.manager.hideCurrentHost = function(pattern) {
   chrome.runtime.sendMessage({
       'type': blocklist.common.ADD_TO_BLOCKLIST,
       'pattern': pattern
     },
     blocklist.manager.handleAddBlocklistResponse);
   $("#current-blocklink").html(
-    '<p style="background:#dff0d8;color:#3c763d;padding:10px;"><b>' +
-    pattern + '</b>はブロック済みです。</p>');
+    '<p style="background:#dff0d8;color:#3c763d;padding:10px;">' +
+    chrome.i18n.getMessage('alreadlyBlocked', pattern) +
+    '</p>');
 }
 
 blocklist.manager.addBlockCurrentHostLink = function(blocklistPatterns) {
   chrome.tabs.query({
     active: true,
-    lastFocusedWindow: true
+    currentWindow: true
   }, function(tabs) {
-    let pattern = blocklist.common.handleHostLinkHref(tabs[0].url)
+    let pattern = blocklist.common.handleHostLinkHref(tabs[0].url);
 
     if (blocklistPatterns.indexOf(pattern) == -1) {
       $('#current-blocklink').html(
-        '<a href="#"><span id="current-host">' + pattern +
-        '</span>をブロックする</a>');
-      $('#current-blocklink').click(blocklist.manager.hideCurrentHost);
+        '<a href="#"> ' +
+        chrome.i18n.getMessage("addBlocklist", pattern) +
+        '</a>');
+      $('#current-blocklink').click(function(){
+        blocklist.manager.hideCurrentHost(pattern);
+      });
     } else {
       $("#current-blocklink").html(
-        '<p style="background:#dff0d8;color:#3c763d;padding:10px;"><b>' +
-        pattern + '</b>はブロック済みです。</p>');
+        '<p style="background:#dff0d8;color:#3c763d;padding:10px;">' +
+        chrome.i18n.getMessage('completeBlocked', pattern) +
+        '</p>');
     };
   });
 }
@@ -99,13 +119,14 @@ blocklist.manager.addBlockCurrentHostLink = function(blocklistPatterns) {
 blocklist.manager.handleRefreshResponse = function(response) {
   $("#manager-pattern-list").show('fast');
 
-  let listDiv = $('#manager-pattern-list');
+  let length  = response.blocklist.length,
+      listDiv = $('#manager-pattern-list');
   listDiv.empty();
 
-  if (response.blocklist != undefined && response.blocklist.length > 0) {
+  if (response.blocklist != undefined && length > 0) {
     blocklist.manager.addBlockCurrentHostLink(response.blocklist);
 
-    for (let i = 0; i < response.blocklist.length; i++) {
+    for (let i = 0; i < length; i++) {
       var patRow = blocklist.manager.createBlocklistPattern(response.blocklist[i]);
       patRow.appendTo(listDiv);
     }

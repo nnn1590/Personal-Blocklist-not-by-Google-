@@ -34,9 +34,11 @@ blocklist.searchpage.handleAddBlocklistFromSerachResult = function(response) {
 blocklist.searchpage.showAddBlocklistMessage = function(pattern, section) {
   let showMessage = document.createElement('p');
   showMessage.style.cssText = 'background:#dff0d8;color:#3c763d;padding:10px;';
-  showMessage.innerHTML = '<b>' + pattern + '</b>をブロックリストに追加しました。';
+  showMessage.innerHTML = chrome.i18n.getMessage("completeBlocked", pattern);
+
   let parent = section.parentNode;
   parent.insertBefore(showMessage, section);
+
   let begin = new Date() - 0;
   setTimeout(function() {
     showMessage.style.visibility = "hidden";
@@ -47,7 +49,7 @@ blocklist.searchpage.showAddBlocklistMessage = function(pattern, section) {
 blocklist.searchpage.deleteSectionsFromSearchResult = function(pattern){
   var searchResultPatterns = document.querySelectorAll(blocklist.searchpage.SEARCH_RESULT_DIV_BOX);
 
-  for (let i = 0; i < searchResultPatterns.length; i++) {
+  for (let i = 0, length = searchResultPatterns.length; i < length; i++) {
     var searchResultPattern = searchResultPatterns[i];
     var searchResultHostLink = searchResultPattern.querySelector("div.r > a");
     if (searchResultHostLink) {
@@ -71,15 +73,16 @@ blocklist.searchpage.addBlocklistFromSearchResult = function(hostlink, searchres
   blocklist.searchpage.showAddBlocklistMessage(pattern, searchresult);
 };
 
-blocklist.searchpage.insertAddBlockLinkInSearchResult = function(searchresult, hostlink) {
+blocklist.searchpage.insertAddBlockLinkInSearchResult = function(searchResult, hostlink) {
   var insertLink = document.createElement('p');
-  insertLink.innerHTML = hostlink + 'をブロックする';
+  insertLink.innerHTML = chrome.i18n.getMessage("addBlocklist", hostlink);
   insertLink.style.cssText =
     "color:#1a0dab;margin:0;text-decoration:underline;cursor: pointer;";
-  searchresult.appendChild(insertLink);
-  insertLink.onclick = function() {
-    blocklist.searchpage.addBlocklistFromSearchResult(hostlink, searchresult);
-  }
+  searchResult.appendChild(insertLink);
+
+  insertLink.addEventListener("click", function() {
+    blocklist.searchpage.addBlocklistFromSearchResult(hostlink, searchResult);
+  }, false);
 };
 
 // パーソナライズ検索がオフの場合は、検索結果の修正を止める
@@ -89,13 +92,11 @@ blocklist.searchpage.isPwsParamUsed = function() {
 
 blocklist.searchpage.modifySearchResults = function() {
 
-  if (blocklist.searchpage.isPwsParamUsed()) {
-    return;
-  }
+  if (blocklist.searchpage.isPwsParamUsed()) return;
 
   var searchResultPatterns = document.querySelectorAll(blocklist.searchpage.SEARCH_RESULT_DIV_BOX);
 
-  for (let i = 0; i < searchResultPatterns.length; i++) {
+  for (let i = 0, length = searchResultPatterns.length; i < length; i++) {
     var searchResultPattern = searchResultPatterns[i];
     var searchResultHostLink = searchResultPattern.querySelector("div.r > a");
     if (searchResultHostLink) {
@@ -123,7 +124,7 @@ blocklist.searchpage.refreshBlocklist = function() {
 blocklist.searchpage.refreshBlocklist();
 
 // window.addEventListener("load",function(){
-//   blocklist.searchpage.modifySearchResults()
+//   blocklist.searchpage.modifySearchResults();
 // },false)
 // では上手く動かない。代替案として、setTimeoutを使用。
 // 200msである必要性はない。

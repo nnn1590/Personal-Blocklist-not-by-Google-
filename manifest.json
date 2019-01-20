@@ -1,8 +1,9 @@
 {
   "name": "Personal Blocklist(not by Google)",
-  "version": "0.1.5",
-  "description": "検索結果から不要なサイトを削除します。",
+  "version": "0.2.0",
+  "description": "Block Website from Google search results",
   "manifest_version": 2,
+  "default_locale": "en",
   "background": {
     "scripts": ["common.js"]
   },
