@@ -1,6 +1,6 @@
 {
   "completeBlocked": {
-    "message": "Blocked $pattern$ completely",
+    "message": "拉黑了 $pattern$",
     "description": "ブロックしました",
     "placeholders":{
       "pattern":{
@@ -11,7 +11,7 @@
   },
 
   "addBlocklist": {
-    "message": "Block $pattern$",
+    "message": "拉黑 $pattern$",
     "description": "patternをブロックする",
     "placeholders":{
       "pattern":{
@@ -22,17 +22,17 @@
   },
 
   "alreadlyBlocked": {
-    "message": "Blocked",
+    "message": "屏蔽",
     "description": "ブロック済み"
   },
 
   "blockThisUrl": {
-    "message": "Block",
+    "message": "屏蔽",
     "description": "ブロックする"
   },
 
   "removeUrlFromBlocklist": {
-    "message": "Remove",
+    "message": "允许",
     "description": "ブロック解除"
   }
 }
