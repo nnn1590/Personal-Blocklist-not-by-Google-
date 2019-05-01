@@ -74,6 +74,6 @@ blocklist.common.handleHostLinkHref = function(pattern) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  blocklist.common.startBackgroundListeners();
-}, false);
+
+blocklist.common.startBackgroundListeners();
+

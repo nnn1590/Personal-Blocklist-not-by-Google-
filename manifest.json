@@ -1,6 +1,6 @@
 {
   "name": "Personal Blocklist(not by Google)",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Block Website from Google search results",
   "manifest_version": 2,
   "default_locale": "en",
@@ -18,7 +18,7 @@
   },
 
   "permissions": [
-    "tabs"
+    "tabs","storage"
   ],
   "content_scripts": [
     {
@@ -236,6 +236,7 @@
            "*://*.google.co.zm/*",
            "*://*.google.co.zw/*"
       ],
+      "run_at": "document_start",
       "js": ["common.js","content_script.js"]
     }
   ]

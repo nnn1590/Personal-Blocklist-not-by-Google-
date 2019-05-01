@@ -121,13 +121,11 @@ blocklist.searchpage.refreshBlocklist = function() {
     blocklist.searchpage.handleGetBlocklistResponse);
 };
 
+// DOMの読み込みが終わる前にrefreshBlocklist()を呼び出して、localStorageのデータを取り出す。
+// DOMContentLoaded後に、modifySearchResults()でDOMｎ修正を行う。
+//
 blocklist.searchpage.refreshBlocklist();
 
-// window.addEventListener("load",function(){
-//   blocklist.searchpage.modifySearchResults();
-// },false)
-// では上手く動かない。代替案として、setTimeoutを使用。
-// 200msである必要性はない。
-setTimeout(function() {
+document.addEventListener("DOMContentLoaded",function(){
   blocklist.searchpage.modifySearchResults();
-}, 200);
+},false);
