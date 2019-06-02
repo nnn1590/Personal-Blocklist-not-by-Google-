@@ -2,26 +2,27 @@ let blocklist = {};
 
 blocklist.common = {};
 
-blocklist.common.GET_BLOCKLIST        = 'getBlocklist';
-blocklist.common.ADD_TO_BLOCKLIST      = 'addToBlocklist';
+blocklist.common.GET_BLOCKLIST = 'getBlocklist';
+blocklist.common.ADD_TO_BLOCKLIST = 'addToBlocklist';
+blocklist.common.ADD_LIST_TO_BLOCKLIST = 'addListToBlocklist';
 blocklist.common.DELETE_FROM_BLOCKLIST = 'deleteFromBlocklist';
 
 blocklist.common.HOST_REGEX = new RegExp(
   '^https?://(www[.])?([0-9a-zA-Z.-]+).*$');
 
 blocklist.common.SUB_DIRECTORY_REGEX = new RegExp(
-    '^https?://(www[.])?([0-9a-zA-Z.-]+/[0-9a-zA-Z.-]+/).*$');
+  '^https?://(www[.])?([0-9a-zA-Z.-]+/[0-9a-zA-Z.-]+/).*$');
 
 
 blocklist.common.SUB_DIRECTORY_SERVICE = [
-  "blog.livedoor.jp","plaza.rakuten.co.jp","ameblo.jp","blogs.yahoo.co.jp",
-  "blog.goo.ne.jp","d.hatena.ne.jp","lineblog.me","note.mu",
+  "blog.livedoor.jp", "plaza.rakuten.co.jp", "ameblo.jp", "blogs.yahoo.co.jp",
+  "blog.goo.ne.jp", "d.hatena.ne.jp", "lineblog.me", "note.mu",
   "qiita.com"
 ];
 
-blocklist.common.startBackgroundListeners = function() {
+blocklist.common.startBackgroundListeners = function () {
   chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
+    function (request, sender, sendResponse) {
       if (request.type == blocklist.common.GET_BLOCKLIST) {
         let blocklistPatterns = [];
         if (!localStorage.blocklist) {
@@ -32,7 +33,7 @@ blocklist.common.startBackgroundListeners = function() {
         sendResponse({
           blocklist: blocklistPatterns
         });
-      } else if (request.type == blocklist.common.ADD_TO_BLOCKLIST ) {
+      } else if (request.type == blocklist.common.ADD_TO_BLOCKLIST) {
         let blocklists = JSON.parse(localStorage['blocklist']);
         if (blocklists.indexOf(request.pattern) == -1) {
           blocklists.push(request.pattern);
@@ -43,6 +44,31 @@ blocklist.common.startBackgroundListeners = function() {
           success: 1,
           pattern: request.pattern
         });
+        // もし、複数のURLをブロックリストに保存する処理であれば
+      } else if (request.type == blocklist.common.ADD_LIST_TO_BLOCKLIST) {
+
+        let regex = /https?:\/\/(www[.])?([0-9a-zA-Z.-]+).*(\r\n|\n)?/g;
+        let arr = [];
+        while ((m = regex.exec(request.pattern)) != null) {
+          arr.push(m[2]);
+        }
+
+        let blocklists = JSON.parse(localStorage['blocklist']);
+        for (let i = 0, length = arr.length; i < length; i++) {
+          if (blocklists.indexOf(arr[i]) == -1) {
+            blocklists.push(arr[i]);
+          }
+        }
+
+        blocklists.sort();
+        localStorage['blocklist'] = JSON.stringify(blocklists);
+
+        sendResponse({
+          success: 1,
+          pattern: request.pattern
+        });
+
+
       } else if (request.type == blocklist.common.DELETE_FROM_BLOCKLIST) {
         let blocklists = JSON.parse(localStorage['blocklist']);
         let index = blocklists.indexOf(request.pattern);
@@ -62,15 +88,15 @@ blocklist.common.startBackgroundListeners = function() {
 // ex) https://example.com/hoge.html → example.com
 // また、サブディレクトリドメインのブログサービス等の場合は以下の様に修正。
 // ex) https://example.com/dir/hoge.html → example.com/dir/
-blocklist.common.handleHostLinkHref = function(pattern) {
+blocklist.common.handleHostLinkHref = function (pattern) {
   let HostLinkPattern = pattern.replace(
     blocklist.common.HOST_REGEX, '$2');
-  if(blocklist.common.SUB_DIRECTORY_SERVICE.indexOf(HostLinkPattern) == -1) {
+  if (blocklist.common.SUB_DIRECTORY_SERVICE.indexOf(HostLinkPattern) == -1) {
     return HostLinkPattern;
   } else {
-     HostLinkPattern = pattern.replace(
+    HostLinkPattern = pattern.replace(
       blocklist.common.SUB_DIRECTORY_REGEX, '$2');
-      return HostLinkPattern;
+    return HostLinkPattern;
   }
 }
 
